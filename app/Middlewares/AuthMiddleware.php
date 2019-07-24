@@ -13,7 +13,7 @@ class AuthMiddleware
      * if the @return value is true then runs method of controller.
      */
     public function run(){
-        echo "OK";
+        echo "Middleware: OK</br>";
         return true;
     }
 }

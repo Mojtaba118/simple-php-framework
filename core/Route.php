@@ -50,7 +50,7 @@ class Route
         return new static();
     }
 
-    protected static function addRoute($route,$control,$name="",$middleware=""){
+    protected static function addRoute($route,$control){
 
         $route=preg_replace('/^\//','',$route);
         if ($route!="" && self::$prefix!="")
@@ -95,6 +95,7 @@ class Route
 
     public static function dispatch($url){
 
+        $url=self::removeHttpParams($url);
         if (!self::match($url)) return;
         $className=self::$namespace.self::$params->controller;
         $method=self::$params->method;
@@ -144,7 +145,7 @@ class Route
         return new static();
     }
 
-    protected static function getRoutes(){
+    public static function getRoutes(){
         return self::$routes;
     }
 
@@ -166,7 +167,6 @@ class Route
                         if (method_exists($controller,"run")){
                             if (is_callable([$controller,"run"])){
                                 if (call_user_func([$controller,"run"])){
-                                    var_dump("Done");
                                     continue;
                                 }
                                 $error=true;
@@ -187,5 +187,15 @@ class Route
             return false;
         else
             return true;
+    }
+
+    protected static function removeHttpParams($url)
+    {
+        if ($url!=""){
+            $parts=explode('&',$url,2);
+            if (strpos($parts[0],'=')==false)
+                $url=$parts[0];
+        }
+        return $url;
     }
 }
