@@ -9,60 +9,175 @@ class Route
 
     protected static $prefix;
 
-    protected static $params=[];
+    protected static $route;
+
+    protected static $params;
+
+    protected static  $namespace="App\\Controllers\\";
 
     public static function get($route,$control){
         if ($_SERVER['REQUEST_METHOD']!=="GET") return;
         self::addRoute($route,$control);
+        return new static();
     }
 
     public static function post($route,$control){
         if ($_SERVER['REQUEST_METHOD']!=="POST") return;
         self::addRoute($route,$control);
+        return new static();
     }
 
-    private static function addRoute($route,$control){
+    public static function put($route,$control){
+        if ($_SERVER['REQUEST_METHOD']!=="PUT") return;
+        self::addRoute($route,$control);
+        return new static();
+    }
+
+    public static function patch($route,$control){
+        if ($_SERVER['REQUEST_METHOD']!=="PATCH") return;
+        self::addRoute($route,$control);
+        return new static();
+    }
+
+    public static function delete($route,$control){
+        if ($_SERVER['REQUEST_METHOD']!=="DELETE") return;
+        self::addRoute($route,$control);
+        return new static();
+    }
+
+    protected static function addRoute($route,$control,$name="",$middleware=""){
 
         $route=preg_replace('/^\//','',$route);
+        if ($route!="" && self::$prefix!="")
+            $route=self::$prefix.'/'.$route;
+        else if ($route=="" && self::$prefix!="")
+            $route=self::$prefix;
 
-        $route=preg_replace('/\{[a-z]+\}/','(?<\1>[a-zA-Z0-9-]+)',$route);
+        self::$route=$route;
+
+        $route=preg_replace('/\{([a-z]+)\}/','(?<\1>[a-zA-Z0-9-]+)',$route);
 
         $route=preg_replace('/\//','\/',$route);
-
-        if ($route!="")
-            $route=self::$prefix.'\/'.$route;
-        else
-            $route=self::$prefix;
 
         $route='/^'.$route.'\/?$/';
 
         $control=is_array($control)?$control['controller']:$control;
         list($params['controller'],$params['method'])=explode('@',$control);
-        self::$routes[$route]=$params;
+
+        $routeOptions=new RouteOptions();
+        $routeOptions->controller=$params['controller'];
+        $routeOptions->method=$params['method'];
+        $routeOptions->route=self::$route;
+        $routeOptions->routeRegex=$route;
+
+        self::$routes[$route]=$routeOptions;
     }
 
-    public static function match($url){
-        foreach (self::$routes as $route=>$params){
+    protected static function match($url){
+        foreach (self::$routes as $route=>$options){
             if (preg_match($route,$url,$match)){
                 foreach ($match as $key=>$value){
                     if (is_string($key)){
-                        $params[$key]=$value;
+                        $options->params[$key]=$value;
                     }
                 }
-                self::$params=$params;
+                self::$params=$options;
                 return true;
             }
         }
         return false;
     }
 
+    public static function dispatch($url){
+
+        if (!self::match($url)) return;
+//        var_dump(self::$params);
+        $className=self::$namespace.self::$params->controller;
+        $method=self::$params->method;
+        if (!self::handleMiddleware(self::$params)) return;
+        if (class_exists($className)){
+            $controller=new $className();
+            if (method_exists($controller,$method)){
+                if (is_callable([$controller,$method])){
+                    call_user_func_array([$controller,$method],self::$params->params);
+                }else{
+                    echo "Method Not Accessible";
+                }
+            }else{
+                echo "Method Not Found";
+            }
+        }else{
+            echo "Controller Not Found";
+        }
+    }
+
     public static function prefix($prefix){
         $prefix=preg_replace('/^\//','',$prefix);
-        $prefix=preg_replace('/\//','\/',$prefix);
         self::$prefix=$prefix;
     }
 
-    public static function getRoutes(){
+    public static function name($name){
+        foreach (self::$routes as $route=>$options){
+            if ($options->route===self::$route){
+                $options->name=$name;
+                break;
+            }
+        }
+        return new static();
+    }
+
+    public static function middleware($middleware){
+        foreach (self::$routes as $route=>$options){
+            if ($options->route===self::$route){
+                $options->middleware=$middleware;
+                break;
+            }
+        }
+        return new static();
+    }
+
+    protected static function getRoutes(){
         return self::$routes;
+    }
+
+    protected static function getParams(){
+        return self::$params;
+    }
+
+    protected static function handleMiddleware($params)
+    {
+        if ($params->middleware=="") return true;
+        $error=false;
+        $middlewares=Kernel::$middlewares;
+        $currentMiddleware=explode('|',$params->middleware);
+        foreach ($currentMiddleware as $mid) {
+            foreach ($middlewares as $key => $middleware) {
+                if ($key == $mid) {
+                    if (class_exists($middleware)){
+                        $controller=new $middleware();
+                        if (method_exists($controller,"run")){
+                            if (is_callable([$controller,"run"])){
+                                if (call_user_func([$controller,"run"])){
+                                    var_dump("Done");
+                                    continue;
+                                }
+                                $error=true;
+                                break;
+                            }else{
+                                echo "Method Not Accessible";
+                            }
+                        }else{
+                            echo "Method Not Found";
+                        }
+                    }else{
+                        echo "Middleware Not Found";
+                    }
+                }
+            }
+        }
+        if ($error)
+            return false;
+        else
+            return true;
     }
 }
