@@ -9,39 +9,44 @@ class Route
 
     protected static $prefix;
 
-    protected static $route;
+    protected static $route=null;
 
     protected static $params;
 
     protected static  $namespace="App\\Controllers\\";
 
     public static function get($route,$control){
+        self::$route=null;
         if ($_SERVER['REQUEST_METHOD']=="GET")
             self::addRoute($route,$control);
         return new static();
     }
 
     public static function post($route,$control){
-        if ($_SERVER['REQUEST_METHOD']!=="POST") return;
-        self::addRoute($route,$control);
+        self::$route=null;
+        if ($_SERVER['REQUEST_METHOD']!=="POST")
+            self::addRoute($route,$control);
         return new static();
     }
 
     public static function put($route,$control){
-        if ($_SERVER['REQUEST_METHOD']!=="PUT") return;
-        self::addRoute($route,$control);
+        self::$route=null;
+        if ($_SERVER['REQUEST_METHOD']!=="PUT")
+            self::addRoute($route,$control);
         return new static();
     }
 
     public static function patch($route,$control){
-        if ($_SERVER['REQUEST_METHOD']!=="PATCH") return;
-        self::addRoute($route,$control);
+        self::$route=null;
+        if ($_SERVER['REQUEST_METHOD']!=="PATCH")
+            self::addRoute($route,$control);
         return new static();
     }
 
     public static function delete($route,$control){
-        if ($_SERVER['REQUEST_METHOD']!=="DELETE") return;
-        self::addRoute($route,$control);
+        self::$route=null;
+        if ($_SERVER['REQUEST_METHOD']!=="DELETE")
+            self::addRoute($route,$control);
         return new static();
     }
 
@@ -116,20 +121,24 @@ class Route
     }
 
     public static function name($name){
-        foreach (self::$routes as $route=>$options){
-            if ($options->route===self::$route){
-                $options->name=$name;
-                break;
+        if (self::$route!=null) {
+            foreach (self::$routes as $route => $options) {
+                if ($options->route === self::$route) {
+                    $options->name = $name;
+                    break;
+                }
             }
         }
         return new static();
     }
 
     public static function middleware($middleware){
-        foreach (self::$routes as $route=>$options){
-            if ($options->route===self::$route){
-                $options->middleware=$middleware;
-                break;
+        if (self::$route!=null){
+            foreach (self::$routes as $route=>$options){
+                if ($options->route===self::$route){
+                    $options->middleware=$middleware;
+                    break;
+                }
             }
         }
         return new static();
