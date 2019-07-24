@@ -16,8 +16,8 @@ class Route
     protected static  $namespace="App\\Controllers\\";
 
     public static function get($route,$control){
-        if ($_SERVER['REQUEST_METHOD']!=="GET") return;
-        self::addRoute($route,$control);
+        if ($_SERVER['REQUEST_METHOD']=="GET")
+            self::addRoute($route,$control);
         return new static();
     }
 
@@ -91,7 +91,6 @@ class Route
     public static function dispatch($url){
 
         if (!self::match($url)) return;
-//        var_dump(self::$params);
         $className=self::$namespace.self::$params->controller;
         $method=self::$params->method;
         if (!self::handleMiddleware(self::$params)) return;

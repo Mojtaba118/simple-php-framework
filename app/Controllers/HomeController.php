@@ -3,7 +3,9 @@
 
 namespace App\Controllers;
 
-class HomeController
+use Core\Controller;
+
+class HomeController extends Controller
 {
     public function index(){
         echo json_encode(["name"=>"mojtaba"]);
