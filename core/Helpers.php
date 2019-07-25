@@ -41,7 +41,10 @@ if (!function_exists('route')){
                 $item++;
            }
        }
-       return "/".$route;
+       if ($route!="")
+           return "/".$route;
+       else
+           throw new Exception("route with name '".$name."' dose not exist",404);
     }
 }
 
