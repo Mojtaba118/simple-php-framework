@@ -7,13 +7,15 @@ class Route
 {
     protected static $routes=[];
 
-    protected static $prefix;
-
     protected static $route=null;
 
     protected static $params;
 
+    protected static $prefix="";
+
     protected static  $namespace="App\\Controllers\\";
+
+    protected static $middleware="";
 
     public static function get($route,$control){
         self::$route=null;
@@ -70,10 +72,11 @@ class Route
         list($params['controller'],$params['method'])=explode('@',$control);
 
         $routeOptions=new RouteOptions();
-        $routeOptions->controller=$params['controller'];
+        $routeOptions->controller=self::$namespace.$params['controller'];
         $routeOptions->method=$params['method'];
         $routeOptions->route=self::$route;
         $routeOptions->routeRegex=$route;
+        $routeOptions->middleware=self::$middleware;
 
         self::$routes[$route]=$routeOptions;
     }
@@ -94,10 +97,9 @@ class Route
     }
 
     public static function dispatch($url){
-
         $url=self::removeHttpParams($url);
         if (!self::match($url)) return;
-        $className=self::$namespace.self::$params->controller;
+        $className=self::$params->controller;
         $method=self::$params->method;
         if (!self::handleMiddleware(self::$params)) return;
         if (class_exists($className)){
@@ -116,7 +118,7 @@ class Route
         }
     }
 
-    public static function prefix($prefix){
+    protected static function prefix($prefix){
         $prefix=preg_replace('/^\//','',$prefix);
         self::$prefix=$prefix;
     }
@@ -137,7 +139,10 @@ class Route
         if (self::$route!=null){
             foreach (self::$routes as $route=>$options){
                 if ($options->route===self::$route){
-                    $options->middleware=$middleware;
+                    if ($options->middleware=="")
+                        $options->middleware=$middleware;
+                    else
+                        $options->middleware.="|".$middleware;
                     break;
                 }
             }
@@ -160,33 +165,34 @@ class Route
         $middlewares=Kernel::$middlewares;
         $currentMiddleware=explode('|',$params->middleware);
         foreach ($currentMiddleware as $mid) {
-            foreach ($middlewares as $key => $middleware) {
-                if ($key == $mid) {
-                    if (class_exists($middleware)){
-                        $controller=new $middleware();
-                        if (method_exists($controller,"run")){
-                            if (is_callable([$controller,"run"])){
-                                if (call_user_func([$controller,"run"])){
-                                    continue;
-                                }
-                                $error=true;
-                                break;
-                            }else{
-                                echo "Method Not Accessible";
+            if (array_key_exists($mid,$middlewares)){
+                var_dump($mid);
+                $middleware=$middlewares[$mid];
+                if (class_exists($middleware)){
+                    $middlewareObject=new $middleware();
+                    if (method_exists($middlewareObject,"run")){
+                        if (is_callable([$middlewareObject,"run"])){
+                            if (call_user_func([$middlewareObject,"run"])){
+                                continue;
                             }
+                            $error=true;
+                            break;
+
                         }else{
-                            echo "Method Not Found";
+                            echo "Method Not Accessible";
                         }
                     }else{
-                        echo "Middleware Not Found";
+                        echo "Method Not Found";
                     }
+                }else{
+                    echo "Middleware Not Found";
                 }
+            }else{
+                $error=true;
+                break;
             }
         }
-        if ($error)
-            return false;
-        else
-            return true;
+        return !$error;
     }
 
     protected static function removeHttpParams($url)
@@ -197,5 +203,26 @@ class Route
                 $url=$parts[0];
         }
         return $url;
+    }
+
+    public static function group($option=[],$cb){
+        $oldPrefix=self::$prefix;
+        if (array_key_exists("prefix",$option)){
+            if (self::$prefix=="")
+                self::prefix($option['prefix']);
+            else
+                self::$prefix.=$option['prefix'];
+        }
+        if (array_key_exists("namespace",$option)){
+            self::$namespace=self::$namespace.$option["namespace"]."\\";
+        }
+        if (array_key_exists("middleware",$option)){
+            self::$middleware=$option["middleware"];
+        }
+        $cb();
+        self::$prefix=$oldPrefix;
+        self::$namespace="App\\Controllers\\";
+        self::$middleware="";
+
     }
 }

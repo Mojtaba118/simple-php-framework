@@ -12,6 +12,7 @@ class Kernel
      * middleware list
      */
     public static $middlewares=[
-      'auth'=>AuthMiddleware::class
+      'auth'=>AuthMiddleware::class,
+
     ];
 }

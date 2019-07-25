@@ -1,15 +1,12 @@
 <?php
 use Core\Route;
-Route::prefix('/api');
 
-Route::get('/','HomeController@index')
-    ->name("home.index")
-    ->middleware("auth");
-//Route::get('/admin','Admin\\AdminController@index');
-Route::get('/tutorials/{slug}/episode/{id}','TutorialsController@episode')->name("tutorials.episode");
+//TODO: Test Route Scenarios For Route::group and $prefix
 
 
-
+Route::group(['prefix'=>'/v1','namespace'=>'Admin','middleware'=>'auth'],function (){
+    Route::get("/admin","AdminController@index");
+});
 
 
 
