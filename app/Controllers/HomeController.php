@@ -9,7 +9,7 @@ class HomeController extends Controller
 {
     public function index(){
         echo "HTTP Params: ";
-        var_dump($_GET);
+        var_dump(request()->all());
         echo "</br>";
         echo json_encode(["name"=>"mojtaba"]);
     }

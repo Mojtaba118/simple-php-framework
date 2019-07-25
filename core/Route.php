@@ -19,35 +19,35 @@ class Route
 
     public static function get($route,$control){
         self::$route=null;
-        if ($_SERVER['REQUEST_METHOD']=="GET")
+        if (request()->getType()=="GET")
             self::addRoute($route,$control);
         return new static();
     }
 
     public static function post($route,$control){
         self::$route=null;
-        if ($_SERVER['REQUEST_METHOD']!=="POST")
+        if (request()->getType()=="POST")
             self::addRoute($route,$control);
         return new static();
     }
 
     public static function put($route,$control){
         self::$route=null;
-        if ($_SERVER['REQUEST_METHOD']!=="PUT")
+        if (request()->getType()=="PUT")
             self::addRoute($route,$control);
         return new static();
     }
 
     public static function patch($route,$control){
         self::$route=null;
-        if ($_SERVER['REQUEST_METHOD']!=="PATCH")
+        if (request()->getType()=="PATCH")
             self::addRoute($route,$control);
         return new static();
     }
 
     public static function delete($route,$control){
         self::$route=null;
-        if ($_SERVER['REQUEST_METHOD']!=="DELETE")
+        if (request()->getType()=="DELETE")
             self::addRoute($route,$control);
         return new static();
     }
