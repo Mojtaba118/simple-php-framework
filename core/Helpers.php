@@ -79,3 +79,26 @@ if (!function_exists('session')){
             return $session;
     }
 }
+
+if (!function_exists('env')){
+    function env($varname,$default=null){
+        $value=getenv($varname);
+        if (empty($value) && $default!=null)
+            return $default;
+        switch ($value){
+            case "true":
+            case "(true)":return true;
+
+            case "false":
+            case "(false)": return false;
+
+            case "null":
+            case "(null)": return null;
+
+            case "empty":
+            case "(empty)": return "";
+
+            default: return $value;
+        }
+    }
+}
