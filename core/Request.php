@@ -29,8 +29,12 @@ class Request implements RequestInterface
 
     public function all()
     {
-        if ($this->isPost())
+        list($param['query'])=explode('&',$_SERVER['QUERY_STRING'],2);
+        if ($this->isPost()){
+            unset($_POST[$param['query']]);
             return $_POST;
+        }
+        unset($_GET[$param['query']]);
         return $_GET;
     }
 }

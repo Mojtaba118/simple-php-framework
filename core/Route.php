@@ -3,6 +3,8 @@
 namespace Core;
 
 
+use mysql_xdevapi\Exception;
+
 class Route
 {
     protected static $routes=[];
@@ -98,7 +100,7 @@ class Route
 
     public static function dispatch($url){
         $url=self::removeHttpParams($url);
-        if (!self::match($url)) return;
+        if (!self::match($url)) throw new \Exception("Not Found",404);
         $className=self::$params->controller;
         $method=self::$params->method;
         if (!self::handleMiddleware(self::$params)) return;
@@ -108,13 +110,13 @@ class Route
                 if (is_callable([$controller,$method])){
                     call_user_func_array([$controller,$method],self::$params->params);
                 }else{
-                    echo "Method Not Accessible";
+                    throw new \Exception("Method Is Not Accessible");
                 }
             }else{
-                echo "Method Not Found";
+                throw new \Exception("Method Not Found: '$method' in '$className'");
             }
         }else{
-            echo "Controller Not Found";
+            throw new \Exception("Controller Not Found: '$className'");
         }
     }
 
@@ -179,13 +181,13 @@ class Route
                             break;
 
                         }else{
-                            echo "Method Not Accessible";
+                            throw new \Exception("Method Is Not Accessible");
                         }
                     }else{
-                        echo "Method Not Found";
+                        throw new \Exception("Method Not Found: 'run'");
                     }
                 }else{
-                    echo "Middleware Not Found";
+                    throw new \Exception("Middleware Not Found: '$mid'");
                 }
             }else{
                 $error=true;
