@@ -4,13 +4,13 @@
 namespace App\Controllers;
 
 use Core\Controller;
+use Core\View;
 
 class HomeController extends Controller
 {
     public function index(){
-        echo "HTTP Params: ";
-        var_dump(request()->all());
-        echo "</br>";
-        echo json_encode(["name"=>"mojtaba"]);
+        View::render("index",["name"=>"mojtaba"]);
+        //view('admin.index',compact())->with(["variable"=>"value"])
+        //                             ->withError([messages])
     }
 }

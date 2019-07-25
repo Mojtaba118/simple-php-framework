@@ -108,7 +108,7 @@ class Route
             $controller=new $className();
             if (method_exists($controller,$method)){
                 if (is_callable([$controller,$method])){
-                    call_user_func_array([$controller,$method],self::$params->params);
+                    echo call_user_func_array([$controller,$method],self::$params->params);
                 }else{
                     throw new \Exception("Method Is Not Accessible");
                 }
