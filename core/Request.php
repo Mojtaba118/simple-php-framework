@@ -6,6 +6,8 @@ namespace Core;
 
 class Request implements RequestInterface
 {
+    public static $backRequest="/";
+    public static $request="/";
 
     public function isPost()
     {

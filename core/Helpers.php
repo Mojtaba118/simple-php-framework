@@ -102,3 +102,15 @@ if (!function_exists('env')){
         }
     }
 }
+
+if (!function_exists('back')){
+    function back(){
+        redirect(\Core\Request::$backRequest);
+    }
+}
+
+if (!function_exists('json')){
+    function json($value){
+        return json_encode($value);
+    }
+}

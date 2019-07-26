@@ -8,6 +8,6 @@ class AdminController
 {
     public function index()
     {
-        echo "Admin";
+        return back();
     }
 }

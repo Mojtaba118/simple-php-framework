@@ -2,12 +2,12 @@
 
 require_once "../bootstrap/bootstrap.php";
 
-//var_dump(\Core\Route::getRoutes());
-//var_dump(request()->all());
-//var_dump(__DIR__);
-//var_dump(dirname(__DIR__));
-//var_dump(ini_get('hello'));
-//var_dump(env("APP_NAME","php"));
+//TODO: view()->with()->withError()
+//TODO: Add Support For Database And Eloquent
+//TODO: Add Auth and auth()
+//TODO: Add Validation and valid()
+//TODO: Add Blade Engine Support
+
 
 \Core\Route::dispatch($_SERVER["QUERY_STRING"]);
 

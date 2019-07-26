@@ -101,6 +101,8 @@ class Route
     public static function dispatch($url){
         $url=self::removeHttpParams($url);
         if (!self::match($url)) throw new \Exception("Not Found",404);
+        Request::$backRequest=Request::$request;
+        Request::$request='/'.self::$params->route;
         $className=self::$params->controller;
         $method=self::$params->method;
         if (!self::handleMiddleware(self::$params)) return;
